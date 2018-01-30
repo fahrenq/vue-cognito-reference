@@ -52,6 +52,13 @@ export default {
   methods: {
     signUp() {
       console.log('Signing up with a following credentials', this.credentials);
+      this.$store
+        .dispatch('signUp', this.credentials)
+        .then(() => {
+          alert('Success! Please, confirm your email and sign in!');
+          this.$router.push({ name: 'Sign In' });
+        })
+        .catch(e => alert(e));
     },
   },
 };

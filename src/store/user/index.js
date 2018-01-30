@@ -1,3 +1,5 @@
+import actions from './actions';
+
 export default {
   state: {
     user: null,
@@ -22,4 +24,6 @@ export default {
       state.user = null;
     },
   },
+
+  actions,
 };

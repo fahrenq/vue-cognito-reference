@@ -4,13 +4,15 @@ const cognito = new Cognito();
 
 export default {
   refreshUser({ commit, dispatch }) {
+    // rejection of this promise indicates
+    // that user isn't logged in
     cognito
       .getCurrentUser()
       .then(({ constructedUser }) => {
         commit('setUser', constructedUser);
         dispatch('getUserAttributes');
       })
-      .catch(e => console.error(e));
+      .catch(e => console.log(e));
   },
 
   signIn({ commit, dispatch }, payload) {
@@ -51,7 +53,7 @@ export default {
       }
 
       cognito
-        .getUserAttributes(getters.user.username)
+        .getUserAttributes(getters.user.username, getters.user.tokens)
         .then((attributes) => {
           commit('setUserAttributes', attributes);
           resolve(attributes);

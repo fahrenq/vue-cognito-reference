@@ -40,6 +40,13 @@ export default {
   methods: {
     signIn() {
       console.log('Signing in with a following credentials', this.credentials);
+      this.$store
+        .dispatch('signIn', this.credentials)
+        .then(() => {
+          alert('Signed In!');
+          this.$router.push({ name: 'Home' });
+        })
+        .catch(e => alert(e));
     },
   },
 };

@@ -5,6 +5,7 @@ import {
   AuthenticationDetails,
 } from 'amazon-cognito-identity-js';
 
+// Store credentials in the constans file or something like this
 const UserPoolId = '<USER_POOL_ID>';
 const ClientId = '<CLIENT_ID>';
 
@@ -16,15 +17,13 @@ export default class Cognito {
     });
   }
 
-  // This method will return a promise, that resolves with user object
+  // This method will return a promise that resolves with user object
   getCurrentUser() {
     return new Promise((resolve, reject) => {
       const cognitoUser = this.userPool.getCurrentUser();
 
       if (!cognitoUser) {
-        reject({
-          message: "Can't retrieve the current user",
-        });
+        reject({ message: "User isn't logged in" });
         return;
       }
 
@@ -84,14 +83,15 @@ export default class Cognito {
     });
   }
 
-  getUserAttributes(username) {
+  getUserAttributes(username, tokens) {
     const cognitoUser = new CognitoUser({
       Pool: this.userPool,
       Username: username,
     });
 
     // Restore session without making an additional call to API
-    cognitoUser.signInUserSession = cognitoUser.getCognitoUserSession(state.user.tokens);
+    cognitoUser.signInUserSession = cognitoUser.getCognitoUserSession(tokens);
+
     return new Promise((resolve, reject) => {
       cognitoUser.getUserAttributes((err, attributes) => {
         if (err) {
@@ -103,7 +103,7 @@ export default class Cognito {
         // [{ Name: 'sex', Value: 'female' }, { Name: attrName, Value: attrValue }, ...]
 
         const formattedAttributes = {};
-        (attributes || []).each((i) => {
+        (attributes || []).forEach((i) => {
           formattedAttributes[i.Name] = i.Value;
         });
 
