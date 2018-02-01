@@ -83,6 +83,7 @@ export default class Cognito {
     });
   }
 
+  // Authenticated only
   getUserAttributes(username, tokens) {
     const cognitoUser = new CognitoUser({
       Pool: this.userPool,
@@ -111,6 +112,36 @@ export default class Cognito {
         // { sex: 'female', attrName: attrValue, ... }
 
         resolve(formattedAttributes);
+      });
+    });
+  }
+
+  // Only for authenticated users
+  updateAttributes(username, tokens, attributes) {
+    return new Promise((resolve, reject) => {
+      // Make sure the user is authenticated
+      const cognitoUser = new CognitoUser({
+        Pool: this.userPool,
+        Username: username,
+      });
+
+      // Restore session without making an additional call to API
+      cognitoUser.signInUserSession = cognitoUser.getCognitoUserSession(tokens);
+
+      const newAttributes = Object.keys(attributes || {}).map(
+        key =>
+          new CognitoUserAttribute({
+            Name: key,
+            Value: attributes[key],
+          }),
+      );
+
+      cognitoUser.updateAttributes(newAttributes, (err) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        resolve();
       });
     });
   }

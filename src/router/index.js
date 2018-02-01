@@ -3,7 +3,7 @@ import Router from 'vue-router';
 import Home from '@/components/Home';
 import SignIn from '@/components/SignIn';
 import SignUp from '@/components/SignUp';
-import AuthenticatedOnly from '@/components/AuthenticatedOnly';
+import Personal from '@/components/Personal';
 
 // Guards
 import authenticated from './guards/authenticated';
@@ -31,9 +31,9 @@ export default new Router({
       beforeEnter: anonimous,
     },
     {
-      path: '/authenticated_only',
-      name: 'Authenticated Only',
-      component: AuthenticatedOnly,
+      path: '/personal',
+      name: 'Personal',
+      component: Personal,
       beforeEnter: authenticated,
     },
   ],

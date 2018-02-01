@@ -44,6 +44,7 @@ export default {
     });
   },
 
+  // Authenticated only
   getUserAttributes({ commit, getters }) {
     return new Promise((resolve, reject) => {
       // Make sure the user is authenticated
@@ -57,6 +58,28 @@ export default {
         .then((attributes) => {
           commit('setUserAttributes', attributes);
           resolve(attributes);
+        })
+        .catch(e => reject(e));
+    });
+  },
+
+  // Authenticated only
+  updateAttributes({ dispatch, getters }, payload) {
+    return new Promise((resolve, reject) => {
+      // Make sure the user is authenticated
+      if (getters.user === null || (getters.user && getters.user.tokens === null)) {
+        reject({ message: 'User is unauthenticated' });
+        return;
+      }
+      cognito
+        .updateAttributes(getters.user.username, getters.user.tokens, payload)
+        .then(() => {
+          // We're updating whole user object here.
+          // You can update only particular attributes in local user object like this:
+          // const newAttributes = Object.assign({}, getters.user.attributes, payload);
+          // commit('setUserAttributes', newAttributes);
+          dispatch('refreshUser');
+          resolve();
         })
         .catch(e => reject(e));
     });

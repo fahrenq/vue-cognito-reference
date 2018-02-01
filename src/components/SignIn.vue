@@ -20,7 +20,7 @@
           autocomplete="current-password">
       </div>
 
-      <button type="submit">Sign Up</button>
+      <button type="submit">Sign In</button>
     </form>
 
     <router-link :to="{ name: 'Sign Up' }">Sign Up</router-link>
