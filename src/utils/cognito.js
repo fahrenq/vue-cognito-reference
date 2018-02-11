@@ -5,7 +5,7 @@ import {
   AuthenticationDetails,
 } from 'amazon-cognito-identity-js';
 
-// Store credentials in the constans file or something like this
+// Store credentials in separate file
 const UserPoolId = '<USER_POOL_ID>';
 const ClientId = '<CLIENT_ID>';
 
