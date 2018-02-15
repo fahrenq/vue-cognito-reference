@@ -64,22 +64,16 @@ export default class Cognito {
   }
 
   signUp(username, password, attributes) {
-    const userAttributes = Object.keys(attributes || {}).map(
-      key =>
-        new CognitoUserAttribute({
-          Name: key,
-          Value: attributes[key],
-        }),
-    );
+    // eslint-disable-next-line no-underscore-dangle
+    const userAttributes = Cognito._attributesToAWSFormat(attributes);
 
     return new Promise((resolve, reject) => {
-      this.userPool.signUp(username, password, userAttributes, null, (err, data) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        resolve({ userConfirmationNecessary: !data.userConfirmed });
-      });
+      const cb = (err, data) => {
+        if (err) reject(err);
+        else resolve({ userConfirmationNecessary: !data.userConfirmed });
+      };
+
+      this.userPool.signUp(username, password, userAttributes, null, cb);
     });
   }
 
@@ -100,17 +94,8 @@ export default class Cognito {
           return;
         }
 
-        // attributes looks like:
-        // [{ Name: 'sex', Value: 'female' }, { Name: attrName, Value: attrValue }, ...]
-
-        const formattedAttributes = {};
-        (attributes || []).forEach((i) => {
-          formattedAttributes[i.Name] = i.Value;
-        });
-
-        // formattedAttributes looks like:
-        // { sex: 'female', attrName: attrValue, ... }
-
+        // eslint-disable-next-line no-underscore-dangle
+        const formattedAttributes = Cognito._attributesFromAWSFormat(attributes);
         resolve(formattedAttributes);
       });
     });
@@ -118,24 +103,19 @@ export default class Cognito {
 
   // Only for authenticated users
   updateAttributes(username, tokens, attributes) {
+    // Make sure the user is authenticated
+    const cognitoUser = new CognitoUser({
+      Pool: this.userPool,
+      Username: username,
+    });
+
+    // Restore session without making an additional call to API
+    cognitoUser.signInUserSession = cognitoUser.getCognitoUserSession(tokens);
+
+    // eslint-disable-next-line no-underscore-dangle
+    const newAttributes = Cognito._attributesToAWSFormat(attributes);
+
     return new Promise((resolve, reject) => {
-      // Make sure the user is authenticated
-      const cognitoUser = new CognitoUser({
-        Pool: this.userPool,
-        Username: username,
-      });
-
-      // Restore session without making an additional call to API
-      cognitoUser.signInUserSession = cognitoUser.getCognitoUserSession(tokens);
-
-      const newAttributes = Object.keys(attributes || {}).map(
-        key =>
-          new CognitoUserAttribute({
-            Name: key,
-            Value: attributes[key],
-          }),
-      );
-
       cognitoUser.updateAttributes(newAttributes, (err) => {
         if (err) {
           reject(err);
@@ -155,6 +135,31 @@ export default class Cognito {
     cognitoUser.signOut();
     // There's no option to handle errors of this
     // signOut method
+  }
+
+  static _attributesToAWSFormat(attributes) {
+    // { sex: 'female', attrName: attrValue, ... }
+    // to
+    // [{ Name: 'sex', Value: 'female' }, { Name: attrName, Value: attrValue }, ...]
+    const keys = Object.keys(attributes || {});
+    return keys.map(
+      key =>
+        new CognitoUserAttribute({
+          Name: key,
+          Value: attributes[key],
+        }),
+    );
+  }
+
+  static _attributesFromAWSFormat(attributes) {
+    // [{ Name: 'sex', Value: 'female' }, { Name: attrName, Value: attrValue }, ...]
+    // to
+    // { sex: 'female', attrName: attrValue, ... }
+    const a = [];
+    (attributes || []).forEach((i) => {
+      a[i.Name] = i.Value;
+    });
+    return a;
   }
 
   static _constructUser(cognitoUser, session) {

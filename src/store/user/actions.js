@@ -30,18 +30,13 @@ export default {
     });
   },
 
-  // If signUp promise has been resolved - it means that user signed up
-  // successfully. We can't authenticate user right after sign up, user
-  // needs to confirm email address.
+  // If signUp promise has been resolved - signed up successfully. We can't
+  // authenticate user right after sign up, user needs to confirm email address.
   signUp(store, payload) {
-    // store argument is unnecessary above and exists here only to accept 'payload'
-    // payload: { username, password, attributes: {} }
-    return new Promise((resolve, reject) => {
-      cognito
-        .signUp(payload.username, payload.password, payload.attributes)
-        .then(({ userConfirmationNecessary }) => resolve({ userConfirmationNecessary }))
-        .catch(e => reject(e));
-    });
+    // store argument is unnecessary above and exists here as a placeholder to
+    // accept 'payload'
+    // payload format: { username, password, attributes: {}}
+    return cognito.signUp(payload.username, payload.password, payload.attributes);
   },
 
   // Authenticated only
